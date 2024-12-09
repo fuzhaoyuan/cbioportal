@@ -114,6 +114,11 @@ public final class StudyViewFilterHelper {
      * Merge the range of numerical bins in DataFilters to reduce the number of scans that runs on the database when filtering.
      */
     public static <T extends DataFilter> List<T> mergeDataFilters(List<T> filters) {
+        // this should throw error or move to all binning endpoints in the future for input validation
+        if (!areValidFilters(filters)) {
+            return filters;
+        }
+        
         boolean isNonNumericalOnly = true;
         List<T> mergedDataFilters = new ArrayList<>();
 
@@ -157,5 +162,72 @@ public final class StudyViewFilterHelper {
         }
 
         return mergedDataFilters;
+    }
+    
+    private static <T extends DataFilter> boolean areValidFilters(List<T> filters) {
+        // check if filters are empty
+        if (filters == null || filters.isEmpty()) {
+            return false;
+        }
+        for (T filter : filters) {
+            // check if each filter has value
+            if (filter.getValues() == null || filter.getValues().isEmpty()) {
+                return false;
+            }
+            
+            BigDecimal start = null;
+            BigDecimal end = null;
+            for (DataFilterValue dataFilterValue : filter.getValues()) {
+                if (dataFilterValue.getValue() != null) {
+                    // non-numerical value shouldn't have numerical value
+                    if (dataFilterValue.getStart() != null || dataFilterValue.getEnd() != null) {
+                        return false;
+                    }
+                }
+                else {
+                    // numerical value can be all null which means all range
+                    if (dataFilterValue.getStart() != null || dataFilterValue.getEnd() != null) {
+                        // check if ranges are sorted / stay increasing
+                        if (dataFilterValue.getStart() != null) {
+                            if (start == null) {
+                                start = dataFilterValue.getStart();
+                            }
+                            else {
+                                if (start.compareTo(dataFilterValue.getStart()) >= 0) {
+                                    return false;
+                                }
+                                else {
+                                    start = dataFilterValue.getStart();
+                                    // no overlapping is allowed
+                                    if (start.compareTo(end) < 0) {
+                                        return false;
+                                    }
+                                }
+                            }
+                        }
+                        if (dataFilterValue.getEnd() != null) {
+                            if (end == null) {
+                                end = dataFilterValue.getEnd();
+                            }
+                            else {
+                                if (end.compareTo(dataFilterValue.getEnd()) >= 0) {
+                                    return false;
+                                }
+                                else {
+                                    end = dataFilterValue.getEnd();
+                                }
+                            }
+                        }
+                        if (dataFilterValue.getStart() != null && dataFilterValue.getEnd() != null) {
+                            // check if start < end
+                            if (dataFilterValue.getStart().compareTo(dataFilterValue.getEnd()) >= 0) {
+                                return false;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return true;
     }
 }

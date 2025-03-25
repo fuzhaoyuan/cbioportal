@@ -46,11 +46,11 @@ public interface ClickhouseAlterationMapper {
                                                           AlterationFilterHelper alterationFilterHelper);
 
     /**
-     * Retrieves the total profiled count for a given alteration type.
+     * Retrieves the total profiled count for a given alteration type, broken down by study.
      *
      * @param studyViewFilterContext the context of the study view filter
      * @param alterationType the type of alteration (e.g., mutation, CNA, etc.)
-     * @return the total profiled count for the given alteration type
+     * @return a list of ProfiledCountByStudy objects, each containing a study ID and its corresponding total profiled count
      */
     List<ProfiledCountByStudy> getTotalProfiledCountByAlterationType(StudyViewFilterContext studyViewFilterContext, String alterationType);
 
@@ -74,11 +74,12 @@ public interface ClickhouseAlterationMapper {
     List<AlterationCountByGene> getTotalProfiledCounts(StudyViewFilterContext studyViewFilterContext, String alterationType, List<MolecularProfile> molecularProfiles);
 
     /**
-     * Retrieves the sample profile count without panel data for a given alteration type.
+     * Retrieves the sample profile count without panel data (WES data) for a given alteration type, broken down by study.
      *
      * @param studyViewFilterContext the context of the study view filter
      * @param alterationType the type of alteration (e.g., mutation, CNA, etc.)
-     * @return the sample profile count without panel data
+     * @return a list of ProfiledCountByStudy objects, each containing a study ID and its corresponding count of
+     *         samples with whole exome sequencing (WES) but no specific gene panel
      */
     List<ProfiledCountByStudy> getSampleProfileCountWithoutPanelData(StudyViewFilterContext studyViewFilterContext, String alterationType);
 }

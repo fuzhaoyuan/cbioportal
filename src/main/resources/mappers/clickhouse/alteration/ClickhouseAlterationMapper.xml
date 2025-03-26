@@ -33,6 +33,7 @@
         entrez_gene_id as entrezGeneId,
         cna_alteration as alteration,
         cna_cytoband as cytoband,
+        cancer_study_identifier as studyId,
         COUNT(DISTINCT sample_unique_id) as numberOfAlteredCases,
         COUNT(*) as totalCount
         FROM genomic_event_derived
@@ -43,7 +44,7 @@
                 <include refid="cnaAlterationFilter"/>
             </if>
         </where>
-        GROUP BY entrez_gene_id, hugo_gene_symbol, alteration, cytoband
+        GROUP BY entrez_gene_id, hugo_gene_symbol, alteration, cytoband, cancer_study_identifier
     </select>
 
     <select id="getStructuralVariantGenes" resultType="org.cbioportal.legacy.model.AlterationCountByGene">
